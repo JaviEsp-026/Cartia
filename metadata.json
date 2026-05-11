@@ -1,0 +1,13 @@
+{
+  "name": "Cartia",
+  "description": "Proactive AI shopping assistant that predicts household needs, optimizes routes, and captures data via voice, photos, and receipts.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "AI-powered predictive inventory",
+    "Multi-modal data capture (Voice, Vision, Receipts)",
+    "Expense and nutritional optimization"
+  ]
+}

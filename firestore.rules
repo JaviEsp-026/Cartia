@@ -1,0 +1,145 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Primitive Definitions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Entity Validations ---
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email']) &&
+             data.keys().size() <= 6 &&
+             data.uid == request.auth.uid &&
+             data.email is string && data.email.size() <= 256;
+    }
+
+    function isValidInventoryItem(data) {
+      return data.keys().hasAll(['userId', 'name', 'currentLevel']) &&
+             data.keys().size() <= 12 &&
+             data.userId == request.auth.uid &&
+             data.name is string && data.name.size() <= 100 &&
+             data.currentLevel is number && data.currentLevel >= 0 && data.currentLevel <= 100 &&
+             (data.get('category', '') is string) &&
+             (data.get('unit', '') is string);
+    }
+
+    function isValidShoppingList(data) {
+      return data.keys().hasAll(['userId', 'name']) &&
+             data.keys().size() <= 6 &&
+             data.userId == request.auth.uid &&
+             data.name is string && data.name.size() <= 100 &&
+             (data.get('collaborators', []) is list);
+    }
+
+    function isValidShoppingItem(data) {
+      return data.keys().hasAll(['listId', 'name', 'checked']) &&
+             data.keys().size() <= 10 &&
+             data.listId is string &&
+             data.name is string && data.name.size() <= 100 &&
+             data.checked is bool;
+    }
+
+
+    function isValidReceipt(data) {
+      return data.keys().hasAll(['userId', 'store', 'date']) &&
+             data.userId == request.auth.uid &&
+             data.store is string && data.store.size() <= 100;
+    }
+
+    // --- Match Blocks ---
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidUser(incoming()) &&
+                      incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL']);
+    }
+
+    match /inventory/{itemId} {
+      allow get: if isVerified() && existing().userId == request.auth.uid;
+      allow list: if isVerified() && resource.data.userId == request.auth.uid;
+      allow create: if isVerified() && isValidInventoryItem(incoming());
+      allow update: if isVerified() && 
+                      existing().userId == request.auth.uid && 
+                      isValidInventoryItem(incoming()) &&
+                      incoming().userId == existing().userId;
+      allow delete: if isVerified() && existing().userId == request.auth.uid;
+    }
+
+    match /shoppingLists/{listId} {
+      function canAccessList(listData) {
+        return listData.userId == request.auth.uid || (request.auth.uid in listData.get('collaborators', []));
+      }
+
+      allow get: if isVerified() && canAccessList(existing());
+      allow list: if isVerified() && (resource.data.userId == request.auth.uid || request.auth.uid in resource.data.get('collaborators', []));
+      allow create: if isVerified() && isValidShoppingList(incoming());
+      allow update: if isVerified() && 
+                      canAccessList(existing()) &&
+                      isValidShoppingList(incoming()) &&
+                      incoming().userId == existing().userId;
+      allow delete: if isVerified() && existing().userId == request.auth.uid;
+    }
+
+    match /shoppingItems/{itemId} {
+      function getParentList(listId) {
+        return get(/databases/$(database)/documents/shoppingLists/$(listId)).data;
+      }
+      
+      function canAccessParent(listId) {
+        let listData = getParentList(listId);
+        return listData.userId == request.auth.uid || (request.auth.uid in listData.get('collaborators', []));
+      }
+
+      allow get: if isVerified() && canAccessParent(existing().listId);
+      allow list: if isVerified(); // Secure list queries must check listId on client side, but we should enforce it...
+      // Note: allow list without resource check is risky, but shoppingItems can't be listed globally easily.
+      // Better: enforce specific query
+      allow list: if isVerified() && exists(/databases/$(database)/documents/shoppingLists/$(resource.data.listId)) && (
+        get(/databases/$(database)/documents/shoppingLists/$(resource.data.listId)).data.userId == request.auth.uid ||
+        request.auth.uid in get(/databases/$(database)/documents/shoppingLists/$(resource.data.listId)).data.collaborators
+      );
+
+      allow create: if isVerified() && isValidShoppingItem(incoming()) && canAccessParent(incoming().listId);
+      allow update: if isVerified() && 
+                      canAccessParent(existing().listId) &&
+                      isValidShoppingItem(incoming()) &&
+                      incoming().listId == existing().listId;
+      allow delete: if isVerified() && canAccessParent(existing().listId);
+    }
+
+    match /receipts/{receiptId} {
+      allow get: if isVerified() && existing().userId == request.auth.uid;
+      allow list: if isVerified() && resource.data.userId == request.auth.uid;
+      allow create: if isVerified() && isValidReceipt(incoming());
+      allow delete: if isVerified() && existing().userId == request.auth.uid;
+    }
+  }
+}

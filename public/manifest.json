@@ -1,0 +1,20 @@
+{
+  "short_name": "Cartia",
+  "name": "Cartia: Asistente de Compras IA",
+  "icons": [
+    {
+      "src": "/cartia_icon_512.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/cartia_icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#10B981",
+  "background_color": "#F9FAFB"
+}

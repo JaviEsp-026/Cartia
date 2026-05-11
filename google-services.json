@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1087329095009",
+    "project_id": "gen-lang-client-0640326411",
+    "storage_bucket": "gen-lang-client-0640326411.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1087329095009:android:38b676d7324c0979d0c920",
+        "android_client_info": {
+          "package_name": "com.cartia.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1087329095009-bmlmfcf74q187jh8b56e54p451050uin.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cartia.app",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "1087329095009-uecnf8dc5frr9dlcodbp993tuo1ij2su.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCY8myYiq4ih7iuoDzlZjStYh0UidLTpX8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1087329095009-uecnf8dc5frr9dlcodbp993tuo1ij2su.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

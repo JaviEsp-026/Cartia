@@ -1,0 +1,96 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "InventoryItem": {
+      "title": "Inventory Item",
+      "description": "An item in the user's pantry or fridge with predictive exhausted data",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "currentLevel": { "type": "number", "description": "Percentage 0-100" },
+        "unit": { "type": "string" },
+        "usageRate": { "type": "number", "description": "Units used per day" },
+        "lastStocked": { "type": "string", "format": "date-time" },
+        "predictedExhaustionDate": { "type": "string", "format": "date-time" },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["userId", "name", "currentLevel"]
+    },
+    "ShoppingList": {
+      "title": "Shopping List",
+      "description": "A collection of items to buy",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "collaborators": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["userId", "name"]
+    },
+    "ShoppingItem": {
+      "title": "Shopping Item",
+      "description": "An item within a shopping list",
+      "type": "object",
+      "properties": {
+        "listId": { "type": "string" },
+        "inventoryItemId": { "type": "string" },
+        "name": { "type": "string" },
+        "quantity": { "type": "number" },
+        "unit": { "type": "string" },
+        "checked": { "type": "boolean" },
+        "addedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["listId", "name", "checked"]
+    },
+    "Receipt": {
+      "title": "Receipt",
+      "description": "Record of a physical store purchase",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "store": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "totalAmount": { "type": "number" },
+        "items": { "type": "array", "items": { "type": "object", "properties": { "name": { "type": "string" }, "price": { "type": "number" } } } }
+      },
+      "required": ["userId", "store", "date"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User documents"
+    },
+    "inventory": {
+      "schema": "InventoryItem",
+      "description": "Global inventory items filtered by userId"
+    },
+    "shoppingLists": {
+      "schema": "ShoppingList",
+      "description": "Shopping lists"
+    },
+    "shoppingItems": {
+      "schema": "ShoppingItem",
+      "description": "Items in shopping lists"
+    },
+    "receipts": {
+      "schema": "Receipt",
+      "description": "Parsed receipts"
+    }
+  }
+}
