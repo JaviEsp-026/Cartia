@@ -4,7 +4,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.EXPO_PUBLIC_GEMINI_API_KEY });
 
 export async function processVoiceCommand(command: string) {
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: "gemini-3.5-flash",
     contents: command,
     config: {
       systemInstruction: `You are Cartia, a proactive shopping assistant. 
@@ -46,7 +46,7 @@ export async function analyzePantryImage(base64Image: string) {
   };
   
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: "gemini-3.5-flash",
     contents: { 
       parts: [
         imagePart, 
@@ -81,7 +81,7 @@ export async function parseReceipt(base64Image: string) {
   };
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: "gemini-3.5-flash",
     contents: {
       parts: [
         imagePart,

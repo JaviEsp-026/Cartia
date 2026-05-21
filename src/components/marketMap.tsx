@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { StyleSheet, View, Text, ActivityIndicator, Platform, ScrollView, TouchableOpacity } from 'react-native';
 import * as Location from 'expo-location';
@@ -27,6 +27,7 @@ export default function MapScreen({ latitude, longitude }: MapScreenProps) {
   const [supermarkets, setSupermarkets] = useState<Supermarket[]>([]);
   const [isFetchingMarkets, setIsFetchingMarkets] = useState<boolean>(true);
   const [isListVisible, setIsListVisible] = useState<boolean>(false);
+  const mapRef = useRef<MapView>(null);
   const { colors } = useTheme();
   const styles = getStyles(colors);
 
@@ -117,6 +118,7 @@ export default function MapScreen({ latitude, longitude }: MapScreenProps) {
   return (
     <View style={styles.container}>
       <MapView
+        ref={mapRef}
         provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined} // Usar Google Maps en Android y el default (Apple Maps) en iOS para evitar crashes en Expo Go
         style={styles.map}
         initialRegion={{
@@ -207,7 +209,16 @@ export default function MapScreen({ latitude, longitude }: MapScreenProps) {
                     key={market.id}
                     style={styles.marketCardSheet}
                     activeOpacity={0.7}
-                    onPress={() => console.log(`Supermercado seleccionado (ID): ${market.id}`)}
+                  onPress={() => {
+                    console.log(`Supermercado seleccionado (ID): ${market.id}`);
+                    mapRef.current?.animateToRegion({
+                      latitude: market.latitude,
+                      longitude: market.longitude,
+                      latitudeDelta: 0.01,
+                      longitudeDelta: 0.01,
+                    }, 1000);
+                    setIsListVisible(false);
+                  }}
                   >
                     <View style={styles.marketLogo}>
                       <Store color={colors.textSubtle} size={24} />
